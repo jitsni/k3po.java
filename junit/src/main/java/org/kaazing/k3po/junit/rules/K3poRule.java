@@ -22,9 +22,11 @@ package org.kaazing.k3po.junit.rules;
 import static java.lang.String.format;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -33,6 +35,7 @@ import org.junit.runner.Description;
 import org.junit.runner.JUnitCore;
 import org.junit.runners.model.Statement;
 import org.kaazing.k3po.junit.annotation.Specification;
+import org.kaazing.k3po.junit.annotation.Specifications;
 import org.kaazing.net.URLFactory;
 
 public class K3poRule extends Verifier {
@@ -83,11 +86,19 @@ public class K3poRule extends Verifier {
 
     @Override
     public Statement apply(Statement statement, final Description description) {
+        Specifications specs = description.getAnnotation(Specifications.class);
+        String[] scripts = (specs != null && specs.value().length > 0) ? new String[specs.value().length] : new String[0];
+        if (scripts.length > 0) {
+            for (int i = 0; i < scripts.length; i++) {
+                scripts[i] = specs.value()[i].value();
+            }
+        } else {
+            Specification spec = description.getAnnotation(Specification.class);
+            scripts = new String[1];
+            scripts[0] = spec.value();
+        }
 
-        Specification specification = description.getAnnotation(Specification.class);
-        String[] scripts = (specification != null) ? specification.value() : null;
-
-        if (scripts != null) {
+        if (scripts.length > 0) {
             // decorate with K3PO behavior only if @Specification annotation is present
             String packagePath = this.scriptRoot;
             if (packagePath == null) {

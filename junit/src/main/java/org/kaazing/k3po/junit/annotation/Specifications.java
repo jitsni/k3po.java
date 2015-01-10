@@ -30,7 +30,6 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD })
-@Repeatable(Specifications.class)
-public @interface Specification {
-    String value();
+public @interface Specifications {
+    Specification[] value();
 }
